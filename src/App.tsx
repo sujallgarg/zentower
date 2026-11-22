@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { Analytics } from '@vercel/analytics/react';
 import { GameMode, ThemeKey, PieceBlueprint, RunSummary } from './types';
 import { getDailySeedInfo } from './utility/rng';
 import { audioEngine } from './audio/ZenAudioEngine';
@@ -216,6 +217,9 @@ export const App: React.FC = () => {
         onClose={() => setIsSponsorModalOpen(false)}
         onShowToast={showToast}
       />
+
+      {/* Vercel Web Analytics */}
+      <Analytics />
     </div>
   );
 };

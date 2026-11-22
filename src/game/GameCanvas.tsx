@@ -766,16 +766,16 @@ export const GameCanvas = forwardRef<GameCanvasHandle, GameCanvasProps>(({
       ctx.fillRect(0, 0, cw, ch);
 
       // Ambient Sun/Moon
+      const isMobile = cw < 640;
       ctx.fillStyle = curTheme.sunColor;
       ctx.beginPath();
-      ctx.arc(cw * 0.76, ch * 0.24, Math.min(cw, ch) * 0.13, 0, Math.PI * 2);
+      ctx.arc(isMobile ? cw * 0.5 : cw * 0.76, isMobile ? Math.min(ch * 0.32, 210) : ch * 0.24, Math.min(cw, ch) * 0.13, 0, Math.PI * 2);
       ctx.fill();
 
       // 1. Sky Billboard #1 Banner on Top (Floating suspended banner showing #1 leader)
       const topSky = skySponsorRef.current;
-      const isMobile = cw < 640;
       const bannerFloatY = Math.sin(animTimeRef.current * 1.1) * 3;
-      const topBy = isMobile ? Math.max(88, ch * 0.12) + bannerFloatY : Math.max(118, ch * 0.16) + bannerFloatY;
+      const topBy = isMobile ? 84 + bannerFloatY : Math.max(115, ch * 0.15) + bannerFloatY;
 
       let bannerW = 260;
       let lbW = Math.min(210, Math.max(165, cw * 0.44));
@@ -783,10 +783,10 @@ export const GameCanvas = forwardRef<GameCanvasHandle, GameCanvasProps>(({
       let bx = cw - lbW - 14;
 
       if (isMobile) {
-        bannerW = Math.min(210, Math.max(140, cw * 0.52));
-        lbW = Math.min(145, Math.max(115, cw * 0.40));
-        topBx = 8;
-        bx = cw - lbW - 8;
+        bannerW = Math.floor((cw - 22) * 0.53);
+        lbW = Math.floor((cw - 22) * 0.45);
+        topBx = 7;
+        bx = cw - lbW - 7;
       } else {
         const lbEstimateW = Math.min(210, Math.max(165, cw * 0.44));
         bannerW = Math.min(260, cw * 0.64);
@@ -794,7 +794,7 @@ export const GameCanvas = forwardRef<GameCanvasHandle, GameCanvasProps>(({
       }
 
       if (topSky) {
-        const bannerH = 42;
+        const bannerH = isMobile ? 38 : 42;
 
         sponsorClickBoundsRef.current.skyBanner = {
           x: topBx,
@@ -805,20 +805,11 @@ export const GameCanvas = forwardRef<GameCanvasHandle, GameCanvasProps>(({
         };
 
         ctx.save();
-        ctx.strokeStyle = curTheme.guideLine;
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        ctx.moveTo(topBx + 24, topBy + bannerH);
-        ctx.lineTo(topBx + 18, topBy + bannerH + 14);
-        ctx.moveTo(topBx + bannerW - 24, topBy + bannerH);
-        ctx.lineTo(topBx + bannerW - 18, topBy + bannerH + 14);
-        ctx.stroke();
-
-        ctx.fillStyle = curTheme.darkUi ? 'rgba(24, 26, 34, 0.72)' : 'rgba(255, 255, 255, 0.76)';
+        ctx.fillStyle = curTheme.darkUi ? 'rgba(24, 26, 34, 0.76)' : 'rgba(255, 255, 255, 0.82)';
         ctx.strokeStyle = topSky.color;
         ctx.lineWidth = 1.5;
         ctx.beginPath();
-        ctx.roundRect(topBx, topBy, bannerW, bannerH, 14);
+        ctx.roundRect(topBx, topBy, bannerW, bannerH, 12);
         ctx.fill();
         ctx.stroke();
 
@@ -900,7 +891,7 @@ export const GameCanvas = forwardRef<GameCanvasHandle, GameCanvasProps>(({
       const rowH = isMobile ? 24 : 26;
       const headerH = isMobile ? 22 : 24;
       const totalH = skyList.length > 0 ? headerH + skyList.length * rowH + 6 : 56;
-      const by = isMobile ? Math.max(88, ch * 0.12) + bannerFloatY : Math.max(76, ch * 0.11) + bannerFloatY;
+      const by = topBy;
 
       sponsorClickBoundsRef.current.skyLeaderboard = {
         x: bx,

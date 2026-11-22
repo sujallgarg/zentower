@@ -69,7 +69,11 @@ export const ScoreDashboardModal: React.FC<ScoreDashboardModalProps> = ({
     onShowToast(`🏆 Posted ${tag} (${summary.peakHeightMeters.toFixed(1)}m) to Top Leaderboard!`);
   };
 
-  const handleShareX = () => {
+  const handleShareX = async () => {
+    const canonicalOrigin = import.meta.env.VITE_APP_URL || (typeof window !== 'undefined' ? `${window.location.origin}${window.location.pathname}` : 'https://zentower.vercel.app');
+    const cleanOrigin = canonicalOrigin.replace(/\/+$/, '');
+    const shareUrl = `${cleanOrigin}?c=${summary.dayNumber}&h=${summary.peakHeightMeters.toFixed(1)}`;
+
     const text = buildShareSummaryText(
       summary.mode,
       summary.dayNumber,
@@ -79,7 +83,46 @@ export const ScoreDashboardModal: React.FC<ScoreDashboardModalProps> = ({
       summary.maxTiltDegrees,
       topSponsor
     );
-    openShareOnX(text);
+
+    // If flashcard silhouette canvas is available, attempt native file sharing or clipboard copy
+    if (silhouetteCanvas) {
+      try {
+        const blob = await new Promise<Blob | null>((resolve) =>
+          silhouetteCanvas.toBlob(resolve, 'image/png')
+        );
+
+        if (blob) {
+          const file = new File([blob], `zentower-flashcard-#${summary.dayNumber}.png`, { type: 'image/png' });
+
+          // 1. Mobile & Web Share API (native sheet with attached flashcard image + link)
+          if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            await navigator.share({
+              title: `ZenTower #${summary.dayNumber} Flashcard`,
+              text,
+              url: shareUrl,
+              files: [file],
+            });
+            onShowToast('Shared ZenTower flashcard to X!');
+            return;
+          }
+
+          // 2. Desktop clipboard copy fallback (allows direct Ctrl+V / Cmd+V in tweet composer)
+          if (navigator.clipboard && typeof ClipboardItem !== 'undefined') {
+            try {
+              await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+              onShowToast('Flashcard image copied! Paste (Ctrl+V) directly on X.');
+            } catch (clipErr) {
+              console.warn('Clipboard image write skipped', clipErr);
+            }
+          }
+        }
+      } catch (err) {
+        console.warn('Flashcard share error', err);
+      }
+    }
+
+    // 3. Open X tweet intent with full summary text and ZenTower link
+    openShareOnX(text, shareUrl);
   };
 
   const handleDownloadCard = () => {

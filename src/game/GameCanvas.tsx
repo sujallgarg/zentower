@@ -209,6 +209,23 @@ export const GameCanvas = forwardRef<GameCanvasHandle, GameCanvasProps>(({
     silCtx.fillStyle = grad;
     silCtx.fillRect(0, 0, 260, 320);
 
+    // Card top brand header
+    silCtx.fillStyle = currentTheme.darkUi ? 'rgba(15, 23, 42, 0.85)' : 'rgba(255, 255, 255, 0.92)';
+    silCtx.fillRect(0, 0, 260, 26);
+    silCtx.fillStyle = '#f59e0b';
+    silCtx.beginPath();
+    silCtx.arc(14, 13, 3.5, 0, Math.PI * 2);
+    silCtx.fill();
+    silCtx.fillStyle = currentTheme.darkUi ? '#f8fafc' : '#1c1917';
+    silCtx.font = '700 9.5px "Inter", sans-serif';
+    silCtx.textAlign = 'left';
+    silCtx.textBaseline = 'middle';
+    silCtx.fillText(`ZEN TOWERS #${dayNumber}`, 22, 13);
+    silCtx.textAlign = 'right';
+    silCtx.font = '700 8.5px "JetBrains Mono", monospace';
+    silCtx.fillStyle = '#d97706';
+    silCtx.fillText(gameWonRef.current ? 'EQUILIBRIUM' : 'DAILY RUN', 248, 13);
+
     const scale = 0.55;
     const cx = 130;
     const baseScreenY = 320 - 48;
@@ -292,17 +309,22 @@ export const GameCanvas = forwardRef<GameCanvasHandle, GameCanvasProps>(({
       silCtx.restore();
     });
 
-    // Card footer label
-    silCtx.fillStyle = 'rgba(255,255,255,0.88)';
+    // Card footer label with height telemetry & ZenTower challenge link
+    silCtx.fillStyle = currentTheme.darkUi ? 'rgba(15, 23, 42, 0.92)' : 'rgba(255, 255, 255, 0.94)';
     silCtx.fillRect(0, 320 - 26, 260, 26);
-    silCtx.fillStyle = '#1c1917';
-    silCtx.font = '700 10px "JetBrains Mono", monospace';
-    silCtx.textAlign = 'center';
+    silCtx.fillStyle = currentTheme.darkUi ? '#f8fafc' : '#1c1917';
+    silCtx.font = '700 9px "JetBrains Mono", monospace';
+    silCtx.textAlign = 'left';
+    silCtx.textBaseline = 'middle';
     silCtx.fillText(
-      `ZEN TOWERS #${dayNumber} • ${peakHeightMetersRef.current.toFixed(1)}m`,
-      130,
-      320 - 9
+      `HEIGHT: ${peakHeightMetersRef.current.toFixed(1)}m`,
+      12,
+      320 - 13
     );
+    silCtx.textAlign = 'right';
+    silCtx.font = '700 8.5px "Inter", sans-serif';
+    silCtx.fillStyle = '#d97706';
+    silCtx.fillText('zentower.vercel.app', 248, 320 - 13);
 
     return card;
   }, [dayNumber]);

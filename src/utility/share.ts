@@ -20,7 +20,7 @@ export function buildShareSummaryText(
       ? `ZEN TOWERS #${dayNumber} — ${count}/${DAILY_TARGET} Balanced`
       : `ZEN TOWERS (Endless) — ${count} Blocks`;
 
-  const canonicalOrigin = import.meta.env.VITE_APP_URL || (typeof window !== 'undefined' ? `${window.location.origin}${window.location.pathname}` : 'https://zentower.app');
+  const canonicalOrigin = import.meta.env.VITE_APP_URL || (typeof window !== 'undefined' ? `${window.location.origin}${window.location.pathname}` : 'https://zentower.vercel.app');
   const cleanOrigin = canonicalOrigin.replace(/\/+$/, '');
   const shareUrl = `${cleanOrigin}?c=${dayNumber}&h=${peakHeightMeters.toFixed(1)}`;
   const sponsorLine = topSponsor ? `\n🏛️ Sponsored by ${topSponsor.name}` : '';
@@ -28,7 +28,12 @@ export function buildShareSummaryText(
   return `${header}\n${bar}\n📏 Height: ${peakHeightMeters.toFixed(1)}m | ⚖️ Max Tilt: ${maxTiltDegrees.toFixed(1)}°${sponsorLine}\nPlay free & beat my tower: ${shareUrl}`;
 }
 
-export function openShareOnX(text: string): void {
-  const intentUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
+export function openShareOnX(text: string, url?: string): void {
+  const params = new URLSearchParams();
+  params.set('text', text);
+  if (url) {
+    params.set('url', url);
+  }
+  const intentUrl = `https://twitter.com/intent/tweet?${params.toString()}`;
   window.open(intentUrl, '_blank', 'noopener,noreferrer');
 }

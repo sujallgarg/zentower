@@ -57,8 +57,8 @@ export const LeaderboardModal: React.FC<LeaderboardModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-40 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm overflow-y-auto">
-      <div className="bg-white rounded-3xl max-w-md w-full p-5 sm:p-6 shadow-2xl border border-black/10 text-stone-900 my-auto">
+    <div className="fixed inset-0 z-40 flex items-center justify-center p-2.5 sm:p-4 bg-black/50 backdrop-blur-sm overflow-y-auto">
+      <div className="bg-white rounded-3xl max-w-md w-full p-4 sm:p-6 shadow-2xl border border-black/10 text-stone-900 my-auto max-h-[92dvh] flex flex-col">
         <div className="flex items-center justify-between mb-2">
           <span className="text-xs font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-stone-100 text-stone-800">
             No Login · Anonymous ID

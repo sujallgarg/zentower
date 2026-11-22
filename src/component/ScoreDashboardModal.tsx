@@ -113,8 +113,8 @@ export const ScoreDashboardModal: React.FC<ScoreDashboardModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-40 flex items-center justify-center p-4 bg-black/45 backdrop-blur-sm overflow-y-auto">
-      <div className="bg-white rounded-3xl max-w-lg w-full p-5 sm:p-6 shadow-2xl border border-black/10 text-stone-900 transform transition-all my-auto">
+    <div className="fixed inset-0 z-40 flex items-center justify-center p-2.5 sm:p-4 bg-black/45 backdrop-blur-sm overflow-y-auto">
+      <div className="bg-white rounded-3xl max-w-lg w-full p-4 sm:p-6 shadow-2xl border border-black/10 text-stone-900 transform transition-all my-auto max-h-[92dvh] overflow-y-auto">
         <div className="flex items-center justify-between mb-2.5">
           <span className={`text-xs font-bold uppercase tracking-wider px-2.5 py-1 rounded-full ${
             won ? 'bg-emerald-100 text-emerald-900' : 'bg-amber-100 text-amber-900'

@@ -771,13 +771,28 @@ export const GameCanvas = forwardRef<GameCanvasHandle, GameCanvasProps>(({
 
       // 1. Sky Billboard #1 Banner on Top (Floating suspended banner showing #1 leader)
       const topSky = skySponsorRef.current;
-      if (topSky) {
+      const isMobile = cw < 640;
+      const bannerFloatY = Math.sin(animTimeRef.current * 1.1) * 3;
+      const topBy = isMobile ? Math.max(88, ch * 0.12) + bannerFloatY : Math.max(118, ch * 0.16) + bannerFloatY;
+
+      let bannerW = 260;
+      let lbW = Math.min(210, Math.max(165, cw * 0.44));
+      let topBx = 16;
+      let bx = cw - lbW - 14;
+
+      if (isMobile) {
+        bannerW = Math.min(210, Math.max(140, cw * 0.52));
+        lbW = Math.min(145, Math.max(115, cw * 0.40));
+        topBx = 8;
+        bx = cw - lbW - 8;
+      } else {
         const lbEstimateW = Math.min(210, Math.max(165, cw * 0.44));
-        const bannerW = cw >= 640 ? Math.min(260, cw * 0.64) : Math.min(200, Math.max(150, cw - lbEstimateW - 24));
+        bannerW = Math.min(260, cw * 0.64);
+        topBx = Math.max(10, Math.min(cw / 2 - bannerW / 2, cw - lbEstimateW - bannerW - 16));
+      }
+
+      if (topSky) {
         const bannerH = 42;
-        const bannerFloatY = Math.sin(animTimeRef.current * 1.1) * 4;
-        const topBx = Math.max(10, Math.min(cw / 2 - bannerW / 2, cw - lbEstimateW - bannerW - 16));
-        const topBy = Math.max(118, ch * 0.16) + bannerFloatY;
 
         sponsorClickBoundsRef.current.skyBanner = {
           x: topBx,
@@ -806,9 +821,10 @@ export const GameCanvas = forwardRef<GameCanvasHandle, GameCanvasProps>(({
         ctx.stroke();
 
         const img = getSponsorImage(topSky.imageDataUrl);
-        const iconR = 13;
-        const iconCx = topBx + 22;
+        const iconR = isMobile ? 11 : 13;
+        const iconCx = topBx + (isMobile ? 18 : 22);
         const iconCy = topBy + bannerH / 2;
+        const textX = topBx + (isMobile ? 34 : 42);
 
         if (img) {
           ctx.save();
@@ -825,7 +841,7 @@ export const GameCanvas = forwardRef<GameCanvasHandle, GameCanvasProps>(({
           ctx.arc(iconCx, iconCy, iconR, 0, Math.PI * 2);
           ctx.fill();
           ctx.fillStyle = '#ffffff';
-          ctx.font = 'bold 13px "Inter", sans-serif';
+          ctx.font = isMobile ? 'bold 11px "Inter", sans-serif' : 'bold 13px "Inter", sans-serif';
           ctx.textAlign = 'center';
           ctx.textBaseline = 'middle';
           ctx.fillText(topSky.symbol || topSky.name[0], iconCx, iconCy + 0.5);
@@ -834,21 +850,21 @@ export const GameCanvas = forwardRef<GameCanvasHandle, GameCanvasProps>(({
         ctx.textAlign = 'left';
         ctx.textBaseline = 'alphabetic';
         ctx.fillStyle = curTheme.darkUi ? '#fafaf9' : '#1c1917';
-        ctx.font = '700 11px "Inter", sans-serif';
-        const maxTitleLen = bannerW < 210 ? 8 : 13;
+        ctx.font = isMobile ? '700 10px "Inter", sans-serif' : '700 11px "Inter", sans-serif';
+        const maxTitleLen = isMobile ? 8 : (bannerW < 210 ? 8 : 13);
         const dispTitle = topSky.name.length > maxTitleLen ? topSky.name.slice(0, maxTitleLen - 1) + '…' : topSky.name;
-        ctx.fillText(dispTitle + (topSky.websiteUrl ? ' ↗' : ''), topBx + 42, topBy + 18);
+        ctx.fillText(dispTitle + (topSky.websiteUrl ? ' ↗' : ''), textX, topBy + (isMobile ? 16 : 18));
 
         ctx.fillStyle = curTheme.darkUi ? '#a8a29e' : '#57534e';
-        ctx.font = '500 10px "Inter", sans-serif';
-        const maxTaglineLen = bannerW < 210 ? 9 : 15;
+        ctx.font = isMobile ? '500 9px "Inter", sans-serif' : '500 10px "Inter", sans-serif';
+        const maxTaglineLen = isMobile ? 9 : (bannerW < 210 ? 9 : 15);
         const dispTag = topSky.tagline.length > maxTaglineLen ? topSky.tagline.slice(0, maxTaglineLen - 1) + '…' : topSky.tagline;
-        ctx.fillText(dispTag, topBx + 42, topBy + 31);
+        ctx.fillText(dispTag, textX, topBy + (isMobile ? 29 : 31));
 
         // Flashcard on the right of the Sky Billboard for the bid
-        const fcW = Math.min(76, Math.max(58, bannerW * 0.32));
-        const fcH = 26;
-        const fcX = topBx + bannerW - fcW - 8;
+        const fcW = isMobile ? 48 : Math.min(76, Math.max(58, bannerW * 0.32));
+        const fcH = isMobile ? 24 : 26;
+        const fcX = topBx + bannerW - fcW - (isMobile ? 6 : 8);
         const fcY = topBy + (bannerH - fcH) / 2;
 
         ctx.save();
@@ -866,12 +882,12 @@ export const GameCanvas = forwardRef<GameCanvasHandle, GameCanvasProps>(({
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillStyle = topSky.color;
-        ctx.font = '700 9px "JetBrains Mono", monospace';
-        ctx.fillText(`$${topSky.bid}`, fcX + fcW / 2, fcY + 9);
+        ctx.font = isMobile ? '700 8.5px "JetBrains Mono", monospace' : '700 9px "JetBrains Mono", monospace';
+        ctx.fillText(`$${topSky.bid}`, fcX + fcW / 2, fcY + (isMobile ? 8 : 9));
 
         ctx.fillStyle = curTheme.darkUi ? '#94a3b8' : '#64748b';
-        ctx.font = '700 7px "Inter", sans-serif';
-        ctx.fillText('SKY #1', fcX + fcW / 2, fcY + 19);
+        ctx.font = isMobile ? '700 6.5px "Inter", sans-serif' : '700 7px "Inter", sans-serif';
+        ctx.fillText('SKY #1', fcX + fcW / 2, fcY + (isMobile ? 17 : 19));
         ctx.restore();
 
         ctx.restore();
@@ -879,14 +895,10 @@ export const GameCanvas = forwardRef<GameCanvasHandle, GameCanvasProps>(({
 
       // 2. Sky Billboard Leaderboard on the right (Shows bids in ranking order)
       const skyList = allSkySponsorsRef.current.slice(0, 3);
-      const lbW = Math.min(210, Math.max(165, cw * 0.44));
-      const rowH = 26;
-      const headerH = 24;
+      const rowH = isMobile ? 24 : 26;
+      const headerH = isMobile ? 22 : 24;
       const totalH = skyList.length > 0 ? headerH + skyList.length * rowH + 6 : 56;
-
-      const floatY = Math.sin(animTimeRef.current * 1.1) * 3;
-      const bx = cw - lbW - 14;
-      const by = Math.max(76, ch * 0.11) + floatY;
+      const by = isMobile ? Math.max(88, ch * 0.12) + bannerFloatY : Math.max(76, ch * 0.11) + bannerFloatY;
 
       sponsorClickBoundsRef.current.skyLeaderboard = {
         x: bx,
@@ -925,20 +937,20 @@ export const GameCanvas = forwardRef<GameCanvasHandle, GameCanvasProps>(({
       ctx.textAlign = 'left';
       ctx.textBaseline = 'middle';
       ctx.fillStyle = themeRef.current === 'obsidian' ? '#f59e0b' : '#b45309';
-      ctx.font = '700 9.5px "Inter", sans-serif';
-      ctx.fillText('★ SKY BILLBOARD', bx + 10, by + 12);
+      ctx.font = isMobile ? '700 8px "Inter", sans-serif' : '700 9.5px "Inter", sans-serif';
+      ctx.fillText(isMobile ? '★ SKY BOARD' : '★ SKY BILLBOARD', bx + (isMobile ? 6 : 10), by + 12);
 
       ctx.textAlign = 'right';
       ctx.font = '700 8px "JetBrains Mono", monospace';
       ctx.fillStyle = themeRef.current === 'obsidian' ? '#94a3b8' : '#78716c';
-      ctx.fillText('RANKING', bx + lbW - 10, by + 12);
+      ctx.fillText(isMobile ? 'RANK' : 'RANKING', bx + lbW - (isMobile ? 6 : 10), by + 12);
 
       // Separator line under header
       ctx.strokeStyle = themeRef.current === 'obsidian' ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)';
       ctx.lineWidth = 1;
       ctx.beginPath();
-      ctx.moveTo(bx + 8, by + headerH);
-      ctx.lineTo(bx + lbW - 8, by + headerH);
+      ctx.moveTo(bx + 6, by + headerH);
+      ctx.lineTo(bx + lbW - 6, by + headerH);
       ctx.stroke();
 
       if (skyList.length > 0) {
@@ -954,11 +966,11 @@ export const GameCanvas = forwardRef<GameCanvasHandle, GameCanvasProps>(({
           ctx.textBaseline = 'middle';
           ctx.font = '700 9px "JetBrains Mono", monospace';
           ctx.fillStyle = rankColor;
-          ctx.fillText(`#${idx + 1}`, bx + 15, rowY + rowH / 2);
+          ctx.fillText(isMobile ? `${idx + 1}` : `#${idx + 1}`, bx + (isMobile ? 8 : 15), rowY + rowH / 2);
 
           // Brand Logo / Emblem
-          const iconR = 8;
-          const iconCx = bx + 32;
+          const iconR = isMobile ? 6.5 : 8;
+          const iconCx = bx + (isMobile ? 22 : 32);
           const iconCy = rowY + rowH / 2;
           const img = getSponsorImage(sp.imageDataUrl);
 
@@ -977,7 +989,7 @@ export const GameCanvas = forwardRef<GameCanvasHandle, GameCanvasProps>(({
             ctx.arc(iconCx, iconCy, iconR, 0, Math.PI * 2);
             ctx.fill();
             ctx.fillStyle = '#ffffff';
-            ctx.font = 'bold 9px "Inter", sans-serif';
+            ctx.font = isMobile ? 'bold 7.5px "Inter", sans-serif' : 'bold 9px "Inter", sans-serif';
             ctx.fillText(sp.symbol || sp.name[0], iconCx, iconCy + 0.5);
           }
 
@@ -985,16 +997,16 @@ export const GameCanvas = forwardRef<GameCanvasHandle, GameCanvasProps>(({
           ctx.textAlign = 'left';
           ctx.textBaseline = 'middle';
           ctx.fillStyle = themeRef.current === 'obsidian' ? '#f8fafc' : '#0f172a';
-          ctx.font = '700 9.5px "Inter", sans-serif';
-          const maxNameLen = lbW < 185 ? 8 : 12;
+          ctx.font = isMobile ? '700 8px "Inter", sans-serif' : '700 9.5px "Inter", sans-serif';
+          const maxNameLen = isMobile ? 6 : (lbW < 185 ? 8 : 12);
           const displayName = sp.name.length > maxNameLen ? sp.name.slice(0, maxNameLen - 1) + '…' : sp.name;
-          ctx.fillText(displayName + (sp.websiteUrl ? ' ↗' : ''), bx + 45, rowY + rowH / 2);
+          ctx.fillText(displayName + (sp.websiteUrl ? ' ↗' : ''), bx + (isMobile ? 32 : 45), rowY + rowH / 2);
 
           // Bid Badge
           ctx.textAlign = 'right';
           ctx.fillStyle = rankColor;
-          ctx.font = '700 9px "JetBrains Mono", monospace';
-          ctx.fillText(`$${sp.bid}`, bx + lbW - 10, rowY + rowH / 2);
+          ctx.font = isMobile ? '700 8px "JetBrains Mono", monospace' : '700 9px "JetBrains Mono", monospace';
+          ctx.fillText(`$${sp.bid}`, bx + lbW - (isMobile ? 6 : 10), rowY + rowH / 2);
         });
       } else {
         // Clean empty state
@@ -1304,13 +1316,13 @@ export const GameCanvas = forwardRef<GameCanvasHandle, GameCanvasProps>(({
       const topWater = waterSponsorRef.current;
       if (topWater) {
         ctx.save();
-        const bannerW = Math.min(270, cw * 0.68);
-        const bannerH = 36;
+        const bannerW = isMobile ? Math.min(240, cw * 0.88) : Math.min(270, cw * 0.68);
+        const bannerH = isMobile ? 32 : 36;
         // Gentle horizontal wave-drift and bobbing motion
         const bobY = Math.sin(animTimeRef.current * 1.6) * 3;
-        const driftX = Math.cos(animTimeRef.current * 0.95) * 8;
+        const driftX = Math.cos(animTimeRef.current * 0.95) * (isMobile ? 4 : 8);
         const wx = cw / 2 - bannerW / 2 + driftX;
-        const wy = currentWbY + 44 + bobY;
+        const wy = currentWbY + (isMobile ? 38 : 44) + bobY;
 
         sponsorClickBoundsRef.current.waterBanner = {
           x: wx,
@@ -1344,9 +1356,10 @@ export const GameCanvas = forwardRef<GameCanvasHandle, GameCanvasProps>(({
 
         // Circular Logo / Emblem
         const img = getSponsorImage(topWater.imageDataUrl);
-        const iconR = 12;
-        const iconCx = wx + 20;
+        const iconR = isMobile ? 10 : 12;
+        const iconCx = wx + (isMobile ? 16 : 20);
         const iconCy = wy + bannerH / 2;
+        const textX = wx + (isMobile ? 32 : 38);
 
         if (img) {
           ctx.save();
@@ -1363,7 +1376,7 @@ export const GameCanvas = forwardRef<GameCanvasHandle, GameCanvasProps>(({
           ctx.arc(iconCx, iconCy, iconR, 0, Math.PI * 2);
           ctx.fill();
           ctx.fillStyle = '#ffffff';
-          ctx.font = 'bold 12px "Inter", sans-serif';
+          ctx.font = isMobile ? 'bold 10px "Inter", sans-serif' : 'bold 12px "Inter", sans-serif';
           ctx.textAlign = 'center';
           ctx.textBaseline = 'middle';
           ctx.fillText(topWater.symbol || topWater.name[0], iconCx, iconCy + 0.5);
@@ -1373,20 +1386,23 @@ export const GameCanvas = forwardRef<GameCanvasHandle, GameCanvasProps>(({
         ctx.textAlign = 'left';
         ctx.textBaseline = 'alphabetic';
         ctx.fillStyle = themeRef.current === 'obsidian' ? '#f8fafc' : '#0f172a';
-        ctx.font = '700 11px "Inter", sans-serif';
-        ctx.fillText(topWater.name.toUpperCase() + (topWater.websiteUrl ? ' ↗' : ''), wx + 38, wy + 15);
+        ctx.font = isMobile ? '700 9.5px "Inter", sans-serif' : '700 11px "Inter", sans-serif';
+        const maxWaterName = isMobile ? 10 : 16;
+        const waterName = topWater.name.length > maxWaterName ? topWater.name.slice(0, maxWaterName - 1) + '…' : topWater.name;
+        ctx.fillText(waterName.toUpperCase() + (topWater.websiteUrl ? ' ↗' : ''), textX, wy + (isMobile ? 13 : 15));
 
         // Tagline
         ctx.fillStyle = themeRef.current === 'obsidian' ? '#94a3b8' : '#475569';
-        ctx.font = '500 10px "Inter", sans-serif';
-        const displayTagline = topWater.tagline.length > 24 ? topWater.tagline.slice(0, 22) + '…' : topWater.tagline;
-        ctx.fillText(displayTagline, wx + 38, wy + 27);
+        ctx.font = isMobile ? '500 8.5px "Inter", sans-serif' : '500 10px "Inter", sans-serif';
+        const maxTagline = isMobile ? 16 : 24;
+        const displayTagline = topWater.tagline.length > maxTagline ? topWater.tagline.slice(0, maxTagline - 2) + '…' : topWater.tagline;
+        ctx.fillText(displayTagline, textX, wy + (isMobile ? 24 : 27));
 
         // WATER #1 Badge
         ctx.textAlign = 'right';
         ctx.fillStyle = topWater.color;
-        ctx.font = '700 9px "JetBrains Mono", monospace';
-        ctx.fillText(`WATER #1 • $${topWater.bid}`, wx + bannerW - 10, wy + 21);
+        ctx.font = isMobile ? '700 8px "JetBrains Mono", monospace' : '700 9px "JetBrains Mono", monospace';
+        ctx.fillText(isMobile ? `$${topWater.bid}` : `WATER #1 • $${topWater.bid}`, wx + bannerW - (isMobile ? 8 : 10), wy + (isMobile ? 19 : 21));
 
         ctx.restore();
       }

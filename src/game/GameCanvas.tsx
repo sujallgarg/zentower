@@ -76,6 +76,17 @@ export const GameCanvas = forwardRef<GameCanvasHandle, GameCanvasProps>(({
   const settleDurationRef = useRef<number>(0);
   const settledPiecesRewardedRef = useRef<Set<number>>(new Set());
 
+  // Helper for consistent logical canvas dimensions immune to DPR mismatch
+  const getCanvasDimensions = useCallback(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return { w: 400, h: 600, wbY: 600 - WATER_LINE_OFFSET };
+    const rect = canvas.getBoundingClientRect();
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const w = rect.width > 0 ? rect.width : canvas.width / dpr;
+    const h = rect.height > 0 ? rect.height : canvas.height / dpr;
+    return { w, h, wbY: h - WATER_LINE_OFFSET };
+  }, []);
+
   // Engine & Bodies
   const engineRef = useRef<Matter.Engine | null>(null);
   const raftBodyRef = useRef<Matter.Body | null>(null);
@@ -187,9 +198,7 @@ export const GameCanvas = forwardRef<GameCanvasHandle, GameCanvasProps>(({
     silCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
     const currentTheme = THEMES[themeRef.current] || THEMES.oak;
-    const canvas = canvasRef.current;
-    const w = canvas ? canvas.width / (window.devicePixelRatio || 1) : 400;
-    const h = canvas ? canvas.height / (window.devicePixelRatio || 1) : 600;
+    const { w, h } = getCanvasDimensions();
     const wbY = h - 125;
     const raftW = Math.min(240, Math.max(175, w * 0.42));
 
@@ -338,8 +347,7 @@ export const GameCanvas = forwardRef<GameCanvasHandle, GameCanvasProps>(({
       return;
     }
 
-    const canvas = canvasRef.current;
-    const w = canvas ? canvas.width / (window.devicePixelRatio || 1) : 400;
+    const { w } = getCanvasDimensions();
 
     while (pieceQueueRef.current.length <= currentPieceIdxRef.current + 2) {
       pieceQueueRef.current.push(
@@ -358,7 +366,7 @@ export const GameCanvas = forwardRef<GameCanvasHandle, GameCanvasProps>(({
 
     const nextBp = pieceQueueRef.current[currentPieceIdxRef.current + 1] || null;
     onNextPieceChangeRef.current(nextBp);
-  }, []);
+  }, [getCanvasDimensions]);
 
   // Drop Active Piece
   const dropPiece = useCallback((targetX?: number) => {
@@ -371,10 +379,7 @@ export const GameCanvas = forwardRef<GameCanvasHandle, GameCanvasProps>(({
       onFirstDropRef.current();
     }
 
-    const canvas = canvasRef.current;
-    const w = canvas.width / (window.devicePixelRatio || 1);
-    const h = canvas.height / (window.devicePixelRatio || 1);
-    const wbY = h - WATER_LINE_OFFSET;
+    const { w, wbY } = getCanvasDimensions();
     const dropY = Math.min(wbY - 340, wbY - 120 - cameraYRef.current);
 
     const finalX = typeof targetX === 'number'
@@ -448,10 +453,7 @@ export const GameCanvas = forwardRef<GameCanvasHandle, GameCanvasProps>(({
 
     if (engineRef.current && canvasRef.current) {
       Matter.World.clear(engineRef.current.world, false);
-      const canvas = canvasRef.current;
-      const w = canvas.width / (window.devicePixelRatio || 1);
-      const h = canvas.height / (window.devicePixelRatio || 1);
-      const wbY = h - WATER_LINE_OFFSET;
+      const { w, wbY } = getCanvasDimensions();
       const raftW = Math.min(240, Math.max(175, w * 0.42));
 
       prevWidthRef.current = w;
@@ -470,7 +472,7 @@ export const GameCanvas = forwardRef<GameCanvasHandle, GameCanvasProps>(({
     });
 
     spawnNextHoveringPiece();
-  }, [dailySeed, spawnNextHoveringPiece]);
+  }, [dailySeed, spawnNextHoveringPiece, getCanvasDimensions]);
 
   useImperativeHandle(ref, () => ({
     dropPiece,
